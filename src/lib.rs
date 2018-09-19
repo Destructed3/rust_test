@@ -64,7 +64,7 @@ pub struct Exec {
 impl Exec {
     pub fn new(id: String, name: String) -> Exec {
         let employer = String::from("");
-        
+
         Exec { id, name, employer }
     }
 }
@@ -81,7 +81,7 @@ impl GameLogic {
         for player_nr in 0..4 {
             let mut id = String::from("P");
             id.push_str(&player_nr.to_string());
-            let player = Player::new(id, String::from("Egon"));
+            let player = Player::new(id, generators::generate_name());
             players.push(player);
         }
 
@@ -107,6 +107,28 @@ impl GameLogic {
         }
 
         GameLogic { map, players, execs }
+    }
+}
+
+mod generators {
+    extern crate rand;
+    extern crate heck;
+
+    use rand::prelude::*;
+
+    pub fn generate_name() -> String {
+        use heck::CamelCase;
+        let mut rng = thread_rng();
+        let syls = vec!["al", "ham", "bra", "a", "chil", "les", "o", "din", "heim", "dal"];
+        let mut name = String::from("");
+        for _ in 0..rng.gen_range(1,4) {
+            let syl = rng.gen_range(0, syls.len());
+            name.push_str(syls[syl]);
+        }
+
+        //let test = heck::KebabCase(name);
+        name.to_camel_case()
+        //heck::CamelCase(name)
     }
 }
 
@@ -142,5 +164,11 @@ mod test {
         obj.add_exec(String::from("new_exec"));
         obj.remove_exec(&String::from("new_exec"));
         assert_eq!(obj.execs.len(), 0);
+    }
+
+    #[test]
+    fn test_namegenration() {
+        let obj = Player::new(String::from("1"), generators::generate_name());
+        assert!(obj.name.len() > 1);
     }
 }
