@@ -8,5 +8,5 @@ fn main() {
     let dimensions = vec![16,16];
     let game_data = game_data::GameData::new(&dimensions);
 
-    cybercity::run(game_data);
+    cybercity::game::run(game_data);
 }

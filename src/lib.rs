@@ -7,31 +7,7 @@ use crate::objects::game_data::*;
 use crate::objects::action::*;
 
 pub mod objects;
-
-pub fn run(game_data: GameData) {
-    let map = game_data.map.iter();
-    for row in map {
-        let nodes = row.iter();
-        for node in nodes {
-            println!("node at {}/{}, ID: {}", &node.x, &node.y, &node.id);
-        }
-    }
-
-    let players = game_data.players.iter();
-    for player in players {
-        println!("Player: {}; ID: {}", &player.name, &player.id);
-    }
-
-    let execs = game_data.execs.iter();
-    for exec in execs {
-        println!("Exec: {}; ID: {}", &exec.name, &exec.id);
-    }
-}
-
-fn setup_players(gd: &GameData) {
-
-}
-
+pub mod game;
 
 mod generators {
     extern crate rand;
@@ -71,23 +47,6 @@ mod generators {
             use crate::objects::player;
             let obj = player::Player::new(String::from("1"), generate_name());
             assert!(obj.name.len() > 1);
-        }        
-    }
-}
-
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn setup_players() {
-        let dimensions = vec![16,16];
-        let game_data = crate::objects::game_data::GameData::new(&dimensions);
-        
-        crate::setup_players(&game_data);
-
-        let _: Vec<_> = game_data.players.iter().map( |player| {
-            assert_eq!(player.execs.len(), 2);
-            assert_eq!(player.nodes.len(), 1);
-        }).collect();
+        }
     }
 }
