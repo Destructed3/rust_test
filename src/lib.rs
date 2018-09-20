@@ -1,112 +1,29 @@
 #![feature(vec_remove_item)]
 
-pub struct Node {
-    pub id: String,
-    pub x: u32,
-    pub y: u32,
-    pub owner: String,
-}
-impl Node {
-    pub fn new(coordinates: &[u32]) -> Node {
-        let x = coordinates[0].clone();
-        let y = coordinates[1].clone();
-        let mut id = String::from("N");
-        id.push_str(&x.to_string());
-        id.push_str(&y.to_string());
-        let owner = String::from("");
+use crate::objects::player::*;
+use crate::objects::exec::*;
+use crate::objects::node::*;
+use crate::objects::game_data::*;
 
-        Node { id, x, y, owner }
-    }
+pub mod objects;
 
-    pub fn change_owner(&mut self, new_owner: String) {
-        self.owner = new_owner;
-    }
-}
-
-pub struct Player {
-    pub id: String,
-    pub name: String,
-    pub money: u32,
-    pub nodes: Vec<String>,
-    pub execs: Vec<String>,
-}
-impl Player {
-    pub fn new(id: String, name: String) -> Player {
-        let money = 1000000;
-        let nodes: Vec<String> = Vec::new();
-        let execs: Vec<String> = Vec::new();
-
-        Player { id, name, money, nodes, execs }
-    }
-
-    pub fn add_node(&mut self, node_id: String) {
-        self.nodes.push(node_id);
-    }
-
-    pub fn remove_node(&mut self, node_id: &String) {
-        self.nodes.remove_item(node_id);
-    }
-
-    pub fn add_exec(&mut self, exec_id: String) {
-        self.execs.push(exec_id);
-    }
-
-    pub fn remove_exec(&mut self, exec_id: &String) {
-        self.execs.remove_item(exec_id);
-    }
-}
-
-pub struct Exec {
-    pub id: String,
-    pub name: String,
-    pub employer: String,
-}
-impl Exec {
-    pub fn new(id: String, name: String) -> Exec {
-        let employer = String::from("");
-
-        Exec { id, name, employer }
-    }
-}
-
-pub struct GameLogic {
-    pub map: Vec<Vec<Node>>,
-    pub players: Vec<Player>,
-    pub execs: Vec<Exec>,
-}
-impl GameLogic {
-    pub fn new(dimensions: &[u32]) -> GameLogic {
-        // Create Players
-        let mut players = Vec::new();
-        for player_nr in 0..4 {
-            let mut id = String::from("P");
-            id.push_str(&player_nr.to_string());
-            let player = Player::new(id, generators::generate_name());
-            players.push(player);
+pub fn run(game_data: GameData) {
+    let map = game_data.map.iter();
+    for row in map {
+        let nodes = row.iter();
+        for node in nodes {
+            println!("node at {}/{}, ID: {}", &node.x, &node.y, &node.id);
         }
+    }
 
-        // Create Execs
-        let mut execs = Vec::new();
-        for exec_nr in 0..12 {
-            let mut id = String::from("E");
-            id.push_str(&exec_nr.to_string());
-            let exec = Exec::new(id, String::from("Ray"));
-            execs.push(exec);
-        }
+    let players = game_data.players.iter();
+    for player in players {
+        println!("Player: {}; ID: {}", &player.name, &player.id);
+    }
 
-        // Create map
-        let mut map = Vec::new();
-        for x in 0..dimensions[0] {
-            let mut row = Vec::new();
-            for y in 0..dimensions[1] {
-                let coordinates = [x.clone(), y.clone()].to_vec();
-                let node = Node::new(&coordinates);
-                row.push(node);
-            }
-            map.push(row);
-        }
-
-        GameLogic { map, players, execs }
+    let execs = game_data.execs.iter();
+    for exec in execs {
+        println!("Exec: {}; ID: {}", &exec.name, &exec.id);
     }
 }
 
@@ -122,53 +39,24 @@ mod generators {
         let syls = vec!["al", "ham", "bra", "a", "chil", "les", "o", "din", "heim", "dal"];
         let mut name = String::from("");
         for _ in 0..rng.gen_range(1,4) {
-            let syl = rng.gen_range(0, syls.len());
+            let syl = rng.gen_range(0, syls.len()-1);
             name.push_str(syls[syl]);
         }
 
-        //let test = heck::KebabCase(name);
         name.to_camel_case()
-        //heck::CamelCase(name)
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;   
+
+        #[test]
+        fn namegeneration() {
+            use crate::objects::player;
+            let obj = player::Player::new(String::from("1"), generate_name());
+            assert!(obj.name.len() > 1);
+        }
     }
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
 
-    #[test]
-    fn test() {
-        let mut obj = Player::new(String::from("1"), String::from("Egon"));
-        obj.add_node(String::from("new_node"));
-        assert!(obj.nodes[0] == String::from("new_node"));
-    }
-
-    #[test]
-    fn test2() {
-        let mut obj = Player::new(String::from("1"), String::from("Egon"));
-        obj.add_node(String::from("new_node"));
-        obj.remove_node(&String::from("new_node"));
-        assert_eq!(obj.nodes.len(), 0);
-    }
-
-    #[test]
-    fn test3() {
-        let mut obj = Player::new(String::from("1"), String::from("Egon"));
-        obj.add_exec(String::from("new_exec"));
-        assert!(obj.execs[0] == String::from("new_exec"));
-    }
-
-    #[test]
-    fn test4() {
-        let mut obj = Player::new(String::from("1"), String::from("Egon"));
-        obj.add_exec(String::from("new_exec"));
-        obj.remove_exec(&String::from("new_exec"));
-        assert_eq!(obj.execs.len(), 0);
-    }
-
-    #[test]
-    fn test_namegenration() {
-        let obj = Player::new(String::from("1"), generators::generate_name());
-        assert!(obj.name.len() > 1);
-    }
-}
