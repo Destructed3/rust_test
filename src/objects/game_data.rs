@@ -5,6 +5,7 @@ pub struct GameData {
     pub map: Vec<Vec<Node>>,
     pub players: Vec<Player>,
     pub execs: Vec<Exec>,
+    pub actions: Vec<Action>,
 }
 impl GameData {
     pub fn new(dimensions: &[u32]) -> GameData {
@@ -38,6 +39,8 @@ impl GameData {
             map.push(row);
         }
 
-        GameData { map, players, execs }
+        let actions = Vec::new();
+
+        GameData { map, players, execs, actions }
     }
 }
