@@ -23,7 +23,7 @@ impl GameData {
         for exec_nr in 0..12 {
             let mut id = String::from("E");
             id.push_str(&exec_nr.to_string());
-            let exec = Exec::new(id, String::from("Ray"));
+            let exec = Exec::new(id, generators::generate_name());
             execs.push(exec);
         }
 
