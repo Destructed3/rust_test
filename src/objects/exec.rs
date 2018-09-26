@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct Exec {
     pub id: String,
     pub name: String,
@@ -12,12 +13,12 @@ impl Exec {
         Exec { id, name, employer, action_queue }
     }
 
-    pub fn change_employer(&mut self, employer: String) {
-        self.employer = employer;
+    pub fn change_employer(&mut self, employer: &String) {
+        self.employer = employer.to_owned();
     }
 
-    pub fn add_action(&mut self, action_id: String) {
-        self.action_queue.push(action_id);
+    pub fn add_action(&mut self, action_id: &String) {
+        self.action_queue.push(action_id.to_string());
     }
     pub fn remove_action(&mut self, action_id: &String) {
         self.action_queue.remove_item(action_id);
@@ -31,7 +32,7 @@ mod tests {
     fn change_employer() {
         let employer = String::from("P12");
         let mut exec = Exec::new(String::from("1"), String::from("Egon"));
-        exec.change_employer(employer.clone());
+        exec.change_employer(&employer);
         assert_eq!(exec.employer, employer);
     }
 
@@ -39,7 +40,7 @@ mod tests {
     fn add_action() {
         let action = String::from("A12");
         let mut exec = Exec::new(String::from("1"), String::from("Egon"));
-        exec.add_action(action.clone());
+        exec.add_action(&action);
         assert_eq!(exec.action_queue[0], action);
     }
 
@@ -47,7 +48,7 @@ mod tests {
     fn remove_action() {
         let action = String::from("A12");
         let mut exec = Exec::new(String::from("1"), String::from("Egon"));
-        exec.add_action(action.clone());
+        exec.add_action(&action);
         exec.remove_action(&action);
         assert_eq!(exec.action_queue.len(), 0);
     }

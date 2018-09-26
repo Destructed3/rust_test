@@ -21,11 +21,29 @@ pub fn run(game_data: GameData) {
 }
 
 fn setup_players(gd: &GameData) {
-    let players = gd.players.iter();
-    for player in players {
-        
+    /**
+     * 1 find empty nodes
+     * 2 add one of them to player
+     * 3 find unemployed execs
+     * 4 add one of them to player
+     * 5-6 repeat 3-4
+     * 
+     * Do for every player
+     */
+    let mut players = gd.players.iter();
+    for mut player in players {
+        //let node = get_start_node(&gd);
+        for _i in 0..2 {
+
+        }
     }
 }
+
+// fn get_start_node(gd: &GameData) -> Node {
+//     let node = gd.map[0][0];
+
+//     node
+// }
 
 fn find_unemployed_execs_id(gd: &GameData) -> Vec<String> {
     let mut unemployed: Vec<String> = Vec::new();
@@ -33,30 +51,36 @@ fn find_unemployed_execs_id(gd: &GameData) -> Vec<String> {
     let execs = gd.execs.iter();
     for exec in execs {
         if exec.employer == "" {
-            unemployed.push(exec.id.clone());
+            unemployed.push(exec.id.to_string());
         }
     }
 
     unemployed
 }
 
+//fn get_unemployed_exec(gd: &GameData) -> &Exec {
+    //let unemployed = find_unemployed_execs_id(gd);
+
+    //exec = gd.getunemployed[0]
+//}
+
 fn add_exec_to_player(exec: &mut Exec, player: &mut Player) {
-    exec.change_employer(player.id.clone());
-    player.add_exec(exec.id.clone());
+    exec.change_employer(&player.id);
+    player.add_exec(&exec.id);
 }
 
 fn remove_exec_from_player(exec: &mut Exec, player: &mut Player) {
-    exec.change_employer(String::from(""));
+    exec.change_employer(&String::from(""));
     player.remove_exec(&exec.id);
 }
 
 fn add_node_to_player(node: &mut Node, player: &mut Player) {
-    node.change_owner(player.id.clone());
-    player.add_node(node.id.clone());
+    node.change_owner(&player.id);
+    player.add_node(&node.id);
 }
 
 fn remove_node_from_player(node: &mut Node, player: &mut Player) {
-    node.change_owner(String::from(""));
+    node.change_owner(&String::from(""));
     player.remove_node(&node.id);
 }
 
@@ -79,11 +103,17 @@ mod tests {
     #[test]
     fn test_find_unemployed_execs_id() {
         let dimensions = vec![16,16];
-        let game_data = objects::game_data::GameData::new(&dimensions);
+        let mut game_data = objects::game_data::GameData::new(&dimensions);
+
+        let mut exec = &mut game_data.execs[0];
+        let mut player = &mut game_data.players[0];
+
+        add_exec_to_player(&mut exec, &mut player);
 
         let unemployed = game::find_unemployed_execs_id(&game_data);            
         
         assert!(unemployed.len() > 0);
+        assert_eq!(unemployed.len(), game_data.execs.len()-1);
 
         let mut ids = Vec::new();
 

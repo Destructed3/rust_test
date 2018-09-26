@@ -16,8 +16,8 @@ impl Node {
         Node { id, x, y, owner }
     }
 
-    pub fn change_owner(&mut self, new_owner: String) {
-        self.owner = new_owner;
+    pub fn change_owner(&mut self, owner_id: &String) {
+        self.owner = owner_id.to_owned();
     }
 }
 
@@ -28,7 +28,7 @@ mod tests {
     fn change_owner() {
         let owner = String::from("new_owner");
         let mut node = Node::new(&vec![1,1]);
-        node.change_owner(owner.clone());
+        node.change_owner(&owner);
         assert_eq!(node.owner, owner);
     }
 }
