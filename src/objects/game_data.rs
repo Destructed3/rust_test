@@ -62,8 +62,43 @@ impl GameData {
         match players {
             Some(p) => return p,
             None    =>  {
-                panic!("Didn't finde fitting exec!");
+                panic!("Didn't find fitting player!");
             }
+        }
+    }
+
+    pub fn unemployed_execs(&mut self) -> Vec<&mut Exec> {
+        let mut execs: Vec<&mut Exec> = Vec::new();
+        
+        let _execs = self.execs.iter_mut();
+        
+        for exec in _execs {
+            if exec.employer == "" {
+                execs.push(exec);
+            }
+        }
+
+        if execs.len() < 1 {
+            panic!("WHY GOD WHY?!");
+        }
+
+        execs
+    }
+
+    pub fn get_node(&mut self, id: &str) -> &mut Node {
+        let rows = self.map.iter_mut();
+        let mut node: Option<&mut Node> = None;
+        for row in rows {
+            node = row.iter_mut().find(|n| n.id == id);
+            match &node {
+                Some(_n) => break,
+                None     => ()
+            }
+        }
+
+        match node {
+            Some(n) => return n,
+            None    => panic!("No node found")
         }
     }
 }
@@ -91,7 +126,7 @@ mod tests {
         gd.get_exec("!");
     }
 
-        #[test]
+    #[test]
     fn test_get_player() {
         let dimensions = vec![1,1];
         let mut gd = GameData::new(&dimensions);
@@ -109,5 +144,43 @@ mod tests {
         let mut gd = objects::game_data::GameData::new(&dimensions);
 
         gd.get_player("!");
+    }
+
+    #[test]
+    fn test_unemployed_execs() {
+        let mut gd = GameData::new(&vec![1,1]);
+        let execs_nr = gd.execs.iter().len();
+
+        let unemp = gd.unemployed_execs();
+
+        assert_eq!(execs_nr, unemp.len());
+        
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_unemployed_execs_panic() {
+        let mut gd = GameData::new(&vec![1,1]);
+        let execs = gd.execs.iter_mut();
+        for exec in execs {
+            exec.employer = String::from("Test");
+        }
+
+        gd.unemployed_execs();
+    }
+
+    #[test]
+    fn test_get_node() {
+        let mut gd = GameData::new(&vec![1,1]);
+        let id = gd.map[0][0].id.to_owned();
+        let node = gd.get_node(&id);
+        assert_eq!(node.id, id);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_get_node_panic() {
+        let mut gd = GameData::new(&vec![1,1]);
+        gd.get_node("ERROR");
     }
 }

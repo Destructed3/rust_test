@@ -20,30 +20,50 @@ pub fn run(game_data: GameData) {
     }
 }
 
-fn setup_players(gd: &GameData) {
-    /**
-     * 1 find empty nodes
-     * 2 add one of them to player
-     * 3 find unemployed execs
-     * 4 add one of them to player
-     * 5-6 repeat 3-4
-     * 
-     * Do for every player
-     */
-    let mut players = gd.players.iter();
-    for mut player in players {
-        //let node = get_start_node(&gd);
-        for _i in 0..2 {
-
+fn setup_players(gd: &mut GameData) {
+    let players = gd.players.iter_mut();
+    for player in players {
+        // FIND START NODE
+        let rows = gd.map.iter_mut();
+        for row in rows {
+            let nodes = row.iter_mut();
+            for node in nodes {
+                if node.owner == "" {
+                    add_node_to_player(node, player);
+                    break;
+                }
+            }
+            if player.nodes.len() > 0 {
+                break;
+            }
         }
+        if player.nodes.len() < 1 {
+            panic!("No Node found");
+        }
+        // END FIND NODE
+        
+        // START ADD EXECS
+        for _i in 0..2 {
+            let execs = gd.execs.iter_mut();
+            for exec in execs {
+                if exec.employer == "" {
+                    add_exec_to_player(exec, player);
+                    break;
+                }
+            }
+        }
+        if player.execs.len() < 2 {
+            panic!("Not enough execs found");
+        }
+        // STOP ADD EXECS
     }
 }
 
-// fn get_start_node(gd: &GameData) -> Node {
-//     let node = gd.map[0][0];
+fn get_start_node(gd: &mut GameData) -> &mut Node {
+    let node = &mut gd.map[0][0];
 
-//     node
-// }
+    node
+}
 
 fn find_unemployed_execs_id(gd: &GameData) -> Vec<String> {
     let mut unemployed: Vec<String> = Vec::new();
@@ -90,9 +110,9 @@ mod tests {
     #[test]
     fn test_setup_players() {
         let dimensions = vec![16,16];
-        let game_data = objects::game_data::GameData::new(&dimensions);
+        let mut game_data = objects::game_data::GameData::new(&dimensions);
         
-        setup_players(&game_data);
+        setup_players(&mut game_data);
 
         let _players: Vec<_> = game_data.players.iter().map( |player| {
             assert_eq!(player.execs.len(), 2);
