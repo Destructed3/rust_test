@@ -37,59 +37,27 @@ fn setup_players(mut gd: GameData) -> GameData {
                 }
             }
         }
-        // END FIND EXECS
-
-        // FIND START NODE
-        {
-            let rows = gd.map.iter();
-            for row in rows {
-                let nodes = row.iter();
-                for node in nodes {
-                    if node.owner == "" {
-                        node_id = node.id.clone();
-                        break;
-                    }
-                }
-                if node_id.len() > 0 {
-                    break;
-                }
-            }
-        }
-        // END FIND START NODE
-
-        // Add Stuff together
-        {
-            let player_option = gd.players.iter_mut().find(|p| p.id == player_id);
-            match player_option {
-                Some(player) => {
-                    player.nodes.push(node_id.clone());
-                }
-                None => panic!("WAAAAH")
-            }
-        }
-        {
-            let rows = gd.map.iter_mut();
-            let mut node_option = None;
-            for row in rows {
-                node_option = row.iter_mut().find(|n| n.id == node_id);
-                match node_option {
-                    Some(node) => {
-                        node_option = Some(node);
-                        break;
-                    }
-                    None       => ()
-                }
-            }
-            match node_option {
-                Some(node) => node.owner = player_id.clone(),
-                None       => panic!("WAAAAH")
-            }
-            
-        }
-
         for id in exec_ids {
             gd.add_exec_to_player(&id, &player_id);
         }
+        // END FIND EXECS
+
+        // FIND START NODE
+        let rows = gd.map.iter();
+        for row in rows {
+            let nodes = row.iter();
+            for node in nodes {
+                if node.owner == "" {
+                    node_id = node.id.clone();
+                    break;
+                }
+            }
+            if node_id.len() > 0 {
+                break;
+            }
+        }
+        gd.add_node_to_player(&node_id, &player_id);  
+        // END FIND START NODE
     }
 
     gd
@@ -110,34 +78,4 @@ mod tests {
             assert_eq!(player.nodes.len(), 1);
         }).collect();
     }
-
-    // #[test]
-    // fn test_find_unemployed_execs_id() {
-    //     let dimensions = vec![16,16];
-    //     let mut game_data = objects::game_data::GameData::new(&dimensions);
-
-    //     let mut exec = &mut game_data.execs[0];
-    //     let mut player = &mut game_data.players[0];
-
-    //     add_exec_to_player(&mut exec, &mut player);
-
-    //     let unemployed = game::find_unemployed_execs_id(&game_data);            
-        
-    //     assert!(unemployed.len() > 0);
-    //     assert_eq!(unemployed.len(), game_data.execs.len()-1);
-
-    //     let mut ids = Vec::new();
-
-    //     for nr in 0..game_data.execs.len() {
-    //         let mut s = String::from("E");
-    //         s.push_str(&nr.to_string());
-    //         ids.push(s);
-    //     }
-
-    //     let exec_ids = unemployed.iter();
-        
-    //     for id in exec_ids {
-    //         assert!(ids.contains(&id));
-    //     }
-    // }
 }

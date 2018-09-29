@@ -1,4 +1,3 @@
-use super::*;
 use crate::*;
 
 pub struct GameData {
@@ -79,7 +78,7 @@ impl GameData {
         }
 
         if execs.len() < 1 {
-            panic!("WHY GOD WHY?!");
+            panic!("Didn't find any unemployed execs");
         }
 
         execs
@@ -111,6 +110,17 @@ impl GameData {
         let index = p_execs.iter().position(|id| id == exec_id).unwrap();
         p_execs.remove(index);
         self.get_exec(exec_id).employer = String::from("");
+    }
+
+    pub fn add_node_to_player(&mut self, node_id: &str, player_id: &str) {
+        self.get_player(player_id).nodes.push(node_id.to_string());
+        self.get_node(node_id).owner = player_id.to_string();
+    }
+    pub fn remove_node_from_player(&mut self, node_id: &str, player_id: &str) {
+        let p_nodes = &mut self.get_player(player_id).nodes;
+        let index = p_nodes.iter().position(|id| id == node_id).unwrap();
+        p_nodes.remove(index);
+        self.get_node(node_id).owner = String::from("");
     }
 }
 
@@ -220,5 +230,35 @@ mod tests {
 
         assert_eq!(gd.players[0].execs.len(), nr_e);
         assert_eq!(gd.execs[0].employer, "");
+    }
+
+    #[test]
+    fn test_add_node_to_player() {
+        let mut gd = GameData::new(&vec![1,1]);
+        let p_id = gd.players[0].id.clone();
+        let n_id = gd.map[0][0].id.clone();
+
+        let nr_n = gd.players[0].nodes.len();
+
+        gd.add_node_to_player(&n_id, &p_id);
+
+        assert!(gd.players[0].nodes.len() > nr_n);
+        assert_eq!(gd.players[0].nodes[0], n_id);
+        assert_eq!(gd.map[0][0].owner, p_id);
+    }
+
+    #[test]
+    fn test_remove_node_from_player() {
+        let mut gd = GameData::new(&vec![1,1]);
+        let p_id = gd.players[0].id.clone();
+        let n_id = gd.map[0][0].id.clone();
+
+        let nr_n = gd.players[0].nodes.len();
+
+        gd.add_node_to_player(&n_id, &p_id);
+        gd.remove_node_from_player(&n_id, &p_id);
+
+        assert_eq!(gd.players[0].nodes.len(), nr_n);
+        assert_eq!(gd.map[0][0].owner, "".to_string());
     }
 }
