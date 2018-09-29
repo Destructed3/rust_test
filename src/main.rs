@@ -2,11 +2,11 @@
 
 extern crate cybercity;
 
-use cybercity::objects::*;
+use cybercity::*;
 
 fn main() {
     let dimensions = vec![16,16];
-    let game_data = game_data::GameData::new(&dimensions);
+    let game_data = objects::game_data::GameData::new(&dimensions);
 
-    cybercity::game::run(game_data);
+    game::run(game_data);
 }

@@ -1,107 +1,98 @@
 use super::*;
 
 pub fn run(game_data: GameData) {
-    let map = game_data.map.iter();
+    let gd = setup_players(game_data);
+    let map = gd.map.iter();
     for row in map {
         let nodes = row.iter();
         for node in nodes {
-            println!("node at {}/{}, ID: {}", &node.x, &node.y, &node.id);
+            println!("node at {}/{}, ID: {}, Owner: {}", &node.x, &node.y, &node.id, &node.owner);
         }
     }
 
-    let players = game_data.players.iter();
+    let players = gd.players.iter();
     for player in players {
-        println!("Player: {}; ID: {}", &player.name, &player.id);
+        println!("Player: {}; ID: {}, Nodes: {:?}, Execs: {:?}", &player.name, &player.id, &player.nodes, &player.execs);
     }
-
-    let execs = game_data.execs.iter();
-    for exec in execs {
-        println!("Exec: {}; ID: {}", &exec.name, &exec.id);
-    }
-}
-
-fn setup_players(gd: &mut GameData) {
-    let players = gd.players.iter_mut();
-    for player in players {
-        // FIND START NODE
-        let rows = gd.map.iter_mut();
-        for row in rows {
-            let nodes = row.iter_mut();
-            for node in nodes {
-                if node.owner == "" {
-                    add_node_to_player(node, player);
-                    break;
-                }
-            }
-            if player.nodes.len() > 0 {
-                break;
-            }
-        }
-        if player.nodes.len() < 1 {
-            panic!("No Node found");
-        }
-        // END FIND NODE
-        
-        // START ADD EXECS
-        for _i in 0..2 {
-            let execs = gd.execs.iter_mut();
-            for exec in execs {
-                if exec.employer == "" {
-                    add_exec_to_player(exec, player);
-                    break;
-                }
-            }
-        }
-        if player.execs.len() < 2 {
-            panic!("Not enough execs found");
-        }
-        // STOP ADD EXECS
-    }
-}
-
-fn get_start_node(gd: &mut GameData) -> &mut Node {
-    let node = &mut gd.map[0][0];
-
-    node
-}
-
-fn find_unemployed_execs_id(gd: &GameData) -> Vec<String> {
-    let mut unemployed: Vec<String> = Vec::new();
 
     let execs = gd.execs.iter();
     for exec in execs {
-        if exec.employer == "" {
-            unemployed.push(exec.id.to_string());
+        println!("Exec: {}; ID: {}, Employer: {}", &exec.name, &exec.id, &exec.employer);
+    }
+}
+
+fn setup_players(mut gd: GameData) -> GameData {
+    for i in 0..gd.players.len() {
+        let player_id = gd.players[i].id.clone();
+        let mut exec_ids: Vec<String> = Vec::new();
+        let mut node_id: String = String::from("");
+        // FIND EXECS
+        for _i in 0..2 {
+            let execs = gd.execs.iter();
+            for exec in execs {
+                let id = exec_ids.iter().find(|id| id == &&exec.id);
+                if exec.employer == "" && id == None {
+                    exec_ids.push(exec.id.clone());
+                    break;
+                }
+            }
+        }
+        // END FIND EXECS
+
+        // FIND START NODE
+        {
+            let rows = gd.map.iter();
+            for row in rows {
+                let nodes = row.iter();
+                for node in nodes {
+                    if node.owner == "" {
+                        node_id = node.id.clone();
+                        break;
+                    }
+                }
+                if node_id.len() > 0 {
+                    break;
+                }
+            }
+        }
+        // END FIND START NODE
+
+        // Add Stuff together
+        {
+            let player_option = gd.players.iter_mut().find(|p| p.id == player_id);
+            match player_option {
+                Some(player) => {
+                    player.nodes.push(node_id.clone());
+                }
+                None => panic!("WAAAAH")
+            }
+        }
+        {
+            let rows = gd.map.iter_mut();
+            let mut node_option = None;
+            for row in rows {
+                node_option = row.iter_mut().find(|n| n.id == node_id);
+                match node_option {
+                    Some(node) => {
+                        node_option = Some(node);
+                        break;
+                    }
+                    None       => ()
+                }
+            }
+            match node_option {
+                Some(node) => node.owner = player_id.clone(),
+                None       => panic!("WAAAAH")
+            }
+            
+        }
+
+        for id in exec_ids {
+            gd.add_exec_to_player(&id, &player_id);
         }
     }
 
-    unemployed
-}
-
-//fn get_unemployed_exec(gd: &GameData) -> &Exec {
-    //let unemployed = find_unemployed_execs_id(gd);
-
-    //exec = gd.getunemployed[0]
-//}
-
-fn add_exec_to_player(exec: &mut Exec, player: &mut Player) {
-    exec.change_employer(&player.id);
-    player.add_exec(&exec.id);
-}
-
-fn remove_exec_from_player(exec: &mut Exec, player: &mut Player) {
-    exec.change_employer(&String::from(""));
-    player.remove_exec(&exec.id);
-}
-
-fn add_node_to_player(node: &mut Node, player: &mut Player) {
-    node.change_owner(&player.id);
-    player.add_node(&node.id);
-}
-
-fn remove_node_from_player(node: &mut Node, player: &mut Player) {
-    node.change_owner(&String::from(""));
-    player.remove_node(&node.id);
+    gd
 }
 
 mod tests {
@@ -112,7 +103,7 @@ mod tests {
         let dimensions = vec![16,16];
         let mut game_data = objects::game_data::GameData::new(&dimensions);
         
-        setup_players(&mut game_data);
+        game_data = setup_players(game_data);
 
         let _players: Vec<_> = game_data.players.iter().map( |player| {
             assert_eq!(player.execs.len(), 2);
@@ -120,79 +111,33 @@ mod tests {
         }).collect();
     }
 
-    #[test]
-    fn test_find_unemployed_execs_id() {
-        let dimensions = vec![16,16];
-        let mut game_data = objects::game_data::GameData::new(&dimensions);
+    // #[test]
+    // fn test_find_unemployed_execs_id() {
+    //     let dimensions = vec![16,16];
+    //     let mut game_data = objects::game_data::GameData::new(&dimensions);
 
-        let mut exec = &mut game_data.execs[0];
-        let mut player = &mut game_data.players[0];
+    //     let mut exec = &mut game_data.execs[0];
+    //     let mut player = &mut game_data.players[0];
 
-        add_exec_to_player(&mut exec, &mut player);
+    //     add_exec_to_player(&mut exec, &mut player);
 
-        let unemployed = game::find_unemployed_execs_id(&game_data);            
+    //     let unemployed = game::find_unemployed_execs_id(&game_data);            
         
-        assert!(unemployed.len() > 0);
-        assert_eq!(unemployed.len(), game_data.execs.len()-1);
+    //     assert!(unemployed.len() > 0);
+    //     assert_eq!(unemployed.len(), game_data.execs.len()-1);
 
-        let mut ids = Vec::new();
+    //     let mut ids = Vec::new();
 
-        for nr in 0..game_data.execs.len() {
-            let mut s = String::from("E");
-            s.push_str(&nr.to_string());
-            ids.push(s);
-        }
+    //     for nr in 0..game_data.execs.len() {
+    //         let mut s = String::from("E");
+    //         s.push_str(&nr.to_string());
+    //         ids.push(s);
+    //     }
 
-        let exec_ids = unemployed.iter();
+    //     let exec_ids = unemployed.iter();
         
-        for id in exec_ids {
-            assert!(ids.contains(&id));
-        }
-    }
-
-    #[test]
-    fn test_add_exec_to_player() {
-        let mut exec = Exec::new(String::from("E1"), String::from("Egon"));
-        let mut player = Player::new(String::from("P1"), String::from("Egon"));
-
-        add_exec_to_player(&mut exec, &mut player);
-
-        assert!(player.execs.len() > 0);
-        assert_eq!(&player.execs[0], &exec.id);
-        assert_eq!(&player.id, &exec.employer);
-    }
-    #[test]
-    fn test_remove_exec_from_player() {
-        let mut exec = Exec::new(String::from("E1"), String::from("Egon"));
-        let mut player = Player::new(String::from("P1"), String::from("Egon"));
-
-        add_exec_to_player(&mut exec, &mut player);
-        remove_exec_from_player(&mut exec, &mut player);
-
-        assert!(player.execs.len() < 1);
-        assert_eq!(&exec.employer, "");
-    }
-
-    #[test]
-    fn test_add_node_to_player() {
-        let mut node = Node::new(&vec![1,1]);
-        let mut player = Player::new(String::from("P1"), String::from("Egon"));
-        
-        add_node_to_player(&mut node, &mut player);
-
-        assert!(player.nodes.len() > 0);
-        assert_eq!(player.nodes[0], node.id);
-        assert_eq!(player.id, node.owner);
-    }
-    #[test]
-    fn test_remove_node_from_player() {
-        let mut node = Node::new(&vec![1,1]);
-        let mut player = Player::new(String::from("P1"), String::from("Egon"));
-
-        add_node_to_player(&mut node, &mut player);
-        remove_node_from_player(&mut node, &mut player);
-
-        assert!(player.nodes.len() < 1);
-        assert_eq!(&node.owner, "");
-    }
+    //     for id in exec_ids {
+    //         assert!(ids.contains(&id));
+    //     }
+    // }
 }

@@ -51,7 +51,7 @@ impl GameData {
         match execs {
             Some(e) => return e,
             None    =>  {
-                panic!("Didn't finde fitting exec!");
+                panic!("Didn't find fitting exec!");
             }
         }
     }
@@ -100,6 +100,17 @@ impl GameData {
             Some(n) => return n,
             None    => panic!("No node found")
         }
+    }
+
+    pub fn add_exec_to_player(&mut self, exec_id: &str, player_id: &str) {
+        self.get_player(player_id).execs.push(exec_id.to_string());
+        self.get_exec(exec_id).employer = player_id.to_string();
+    }
+    pub fn remove_exec_from_player(&mut self, exec_id: &str, player_id: &str) {
+        let p_execs = &mut self.get_player(player_id).execs;
+        let index = p_execs.iter().position(|id| id == exec_id).unwrap();
+        p_execs.remove(index);
+        self.get_exec(exec_id).employer = String::from("");
     }
 }
 
@@ -182,5 +193,32 @@ mod tests {
     fn test_get_node_panic() {
         let mut gd = GameData::new(&vec![1,1]);
         gd.get_node("ERROR");
+    }
+
+    #[test]
+    fn test_add_exec_to_player() {
+        let mut gd = GameData::new(&vec![1,1]);
+        let p_id = gd.players[0].id.clone();
+        let e_id = gd.execs[0].id.clone();
+
+        gd.add_exec_to_player(&e_id, &p_id);
+
+        assert_eq!(gd.players[0].execs[0], e_id);
+        assert_eq!(gd.execs[0].employer, p_id);
+    }
+
+    #[test]
+    fn test_remove_exec_from_player() {
+        let mut gd = GameData::new(&vec![1,1]);
+        let p_id = gd.players[0].id.clone();
+        let e_id = gd.execs[0].id.clone();
+
+        let nr_e = gd.players[0].execs.len();
+
+        gd.add_exec_to_player(&e_id, &p_id);
+        gd.remove_exec_from_player(&e_id, &p_id);
+
+        assert_eq!(gd.players[0].execs.len(), nr_e);
+        assert_eq!(gd.execs[0].employer, "");
     }
 }
