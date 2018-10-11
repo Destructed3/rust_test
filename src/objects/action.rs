@@ -1,5 +1,39 @@
 use std::collections::HashMap;
 
+/// The Action-Type. Is supposed to hold all important information, about an action
+pub struct Action {
+    pub id: String,
+    pub player_id: String,
+    pub exec_id: String,
+    pub kind: ActionType,
+    pub data: HashMap<String, ActionData>,
+}
+impl Action {
+    pub fn new(_id: &str, _player_id: &str, _exex_id: &str, _kind: ActionType, data: HashMap<String, ActionData>) -> Action {
+        let (id, player_id, exec_id, kind) = (_id.to_string(), _player_id.to_string(), _exex_id.to_string(), _kind);
+        Action { id, player_id, exec_id, kind, data }
+    }
+
+    pub fn get_value(&self, key: &str) -> &ActionData {
+        let hash_value = self.data.get(key);
+        match hash_value {
+            Some(val) => return val,
+            None      => panic!("Key doesn't exist for this action")
+        }
+    }
+}
+
+pub enum ActionType {
+    Buy,
+    Attack,
+    Move,
+    Research,
+}
+/// Holds dynamic data necessary for the action
+/// holding Datatypes: 
+/// * Text -> String
+/// * Number -> u32
+/// * Boolean -> bool
 pub enum ActionData {
     Text(String),
     Number(u32),
@@ -57,40 +91,10 @@ impl ActionData {
     }
     pub fn is_empty(self) -> bool {
         match self {
-            ActionData::Text(t) => return false,
+            ActionData::Text(_) => return false,
             ActionData::Number(_) => return false,
             ActionData::Boolean(_) => return false,
             ActionData::None => return true
-        }
-    }
-}
-
-pub enum ActionType {
-    Buy,
-    Attack,
-    Move,
-    Research,
-}
-
-pub struct Action {
-    pub id: String,
-    pub player_id: String,
-    pub exec_id: String,
-    pub kind: ActionType,
-    pub data: HashMap<String, ActionData>,
-}
-
-impl Action {
-    pub fn new(_id: &str, _player_id: &str, _exex_id: &str, _kind: ActionType, data: HashMap<String, ActionData>) -> Action {
-        let (id, player_id, exec_id, kind) = (_id.to_string(), _player_id.to_string(), _exex_id.to_string(), _kind);
-        Action { id, player_id, exec_id, kind, data }
-    }
-
-    pub fn get_value(&self, key: &str) -> &ActionData {
-        let hash_value = self.data.get(key);
-        match hash_value {
-            Some(val) => return val,
-            None      => panic!("Key doesn't exist for this action")
         }
     }
 }
