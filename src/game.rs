@@ -87,8 +87,9 @@ fn node_allowed(gd: &GameData, node: &Node) -> bool {
     if node.x < 2 || node.x > gd.map[0].len() as u32 -3 {
         return false;
     }
+    // Node away from other owned nodes
     let check_blocker = |old_node: &Node| {
-        old_node.owner != "" && (node.x < old_node.x+3) && (node.y < old_node.y+3)
+        old_node.owner != "" && (node.x < old_node.x+2) && (node.y < old_node.y+2)
     };
     for row in gd.map.iter() {
         if row.iter().filter( |n| check_blocker(n) ).count() > 0 {
@@ -113,6 +114,40 @@ mod tests {
             assert_eq!(player.execs.len(), 2);
             assert_eq!(player.nodes.len(), 1);
         }).collect();
+    }
+    
+    #[test]
+    fn test_node_allowed() {
+        let (map_len, map_hei) = (11,11);
+        let mut gd = objects::game_data::GameData::new(&vec![map_len,map_hei]);
+        // Owned
+        let mut owned = Node::new(&vec![2,2]);
+        owned.owner = String::from("Jackshit");
+        assert!( !node_allowed(&gd, &owned));
+        // Outside allowed area
+        let out_of_boarder = vec![Node::new(&vec![2,1]), Node::new(&vec![9,2]), Node::new(&vec![2,9]), Node::new(&vec![1,2])];
+        for node in out_of_boarder.iter() {
+            assert!( !node_allowed(&gd, &node) );
+        }
+        // Inside allowed area
+        let inside_boarder = vec![Node::new(&vec![2,2]), Node::new(&vec![8,2]), Node::new(&vec![8,8]), Node::new(&vec![2,8])];
+        for node in inside_boarder.iter() {
+            assert!(node_allowed(&gd, &node));
+        }
+        // Not colliding with other node
+        let evil_player = Player::new(String::from("Fuck"), String::from("You"));
+        let pid = evil_player.id.clone();
+        let evil_node = Node::new(&vec![5,5]);
+        gd.players.push(evil_player);
+        gd.add_node_to_player(&evil_node.id, &pid);
+        let inside_player_area = vec![Node::new(&vec![3,3]), Node::new(&vec![3,7]), Node::new(&vec![7,3]), Node::new(&vec![7,7])];
+        for node in inside_player_area.iter() {
+            assert!( !node_allowed(&gd, &node) );
+        }
+        let outside_player_area = vec![Node::new(&vec![2,2]), Node::new(&vec![2,8]), Node::new(&vec![8,2]), Node::new(&vec![8,8])];
+        for node in outside_player_area.iter() {
+            assert!( node_allowed(&gd, &node), "failed for {}/{}", &node.x, &node.y );
+        }
     }
 
     #[test]
@@ -151,12 +186,12 @@ mod tests {
             assert!( y < &(map_hei - 1), "Y should be < {} -> y: {} | {:?}",(map_hei - 1), y, node_coord );
             // Node at least 2 rows and cols from next player-owned node
             let check = |n: &HashMap<&str, u32>, arg: &str| {
-                let coord = node.get(arg).unwrap();
-                let _coord = n.get(arg).unwrap();
-                if _coord < &(space_to_boarder+1)  {
-                    return coord > &(space_to_boarder+space_between+2); // +2 because you need to account for 2 nodes
+                let coordinate = node.get(arg).unwrap();
+                let old_coordinate = n.get(arg).unwrap();
+                if old_coordinate < &(space_to_boarder+1)  {
+                    return coordinate > &(space_to_boarder+space_between+1);
                 } else {
-                    return coord > &(_coord+space_between+1) && coord < &(_coord-space_between-1);
+                    return coordinate > &(old_coordinate+space_between+1) && coordinate < &(old_coordinate-space_between-1);
                 }
             };
             let close_nodes_x = node_coord.iter().filter( |n| check(n, "x") ).count();
@@ -176,4 +211,5 @@ mod tests {
             assert_eq!(game_data.get_exec(exec_id).employer, "");
         }
     }
+
 }

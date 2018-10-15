@@ -28,11 +28,11 @@ impl GameData {
         }
 
         // Create map
-        let mut map = Vec::new();
-        for x in 0..dimensions[0] {
-            let mut row = Vec::new();
-            for y in 0..dimensions[1] {
-                let coordinates = [x.clone(), y.clone()].to_vec();
+        let mut map = Vec::with_capacity(dimensions[0] as usize);
+        while map.len() < map.capacity() {
+            let mut row = Vec::with_capacity(dimensions[1] as usize);
+            while row.len() < row.capacity() {
+                let coordinates = vec![row.len() as u32, map.len() as u32];
                 let node = Node::new(&coordinates);
                 row.push(node);
             }
@@ -125,6 +125,7 @@ impl GameData {
 }
 
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[test]

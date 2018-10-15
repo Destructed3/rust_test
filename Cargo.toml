@@ -1,7 +1,7 @@
 [package]
 name = "cybercity"
 version = "0.1.0"
-authors = ["Hannes Hunzinger <hunzinger@localhero.de>"]
+authors = ["Hannes Hunzinger <hunzi.han@gmail.com>"]
 edition = "2018"
 
 [dependencies]
