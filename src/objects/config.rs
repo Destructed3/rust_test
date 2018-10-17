@@ -1,19 +1,18 @@
 pub struct Config {
     pub map_size: Vec<u32>,
     pub player_number: u32,
-    pub starting_nodes: u32,
+    pub starting_nodes: u32,              // per Player
     pub starting_distance: u32,
     pub starting_boarder_distance: u32,
-    pub starting_execs: u32
+    pub starting_execs: u32               // per Player
 }
 
 impl Config {
-    pub fn new(map_size: Vec<u32>, player_number: u32, starting_nodes: u32, starting_distance: u32, starting_boarder_distance: u32) -> Config {
-        let starting_execs = player_number * 3;
+    pub fn new(map_size: Vec<u32>, player_number: u32, starting_nodes: u32, starting_distance: u32, starting_boarder_distance: u32, starting_execs: u32) -> Config {
         Config { 
             map_size, 
             player_number, 
-            starting_nodes, 
+            starting_nodes,
             starting_distance, 
             starting_boarder_distance, 
             starting_execs 
@@ -22,7 +21,7 @@ impl Config {
 
     pub fn read_config() -> Config {
         let dimensions = vec![16,16];
-        Config::new(dimensions, 4, 1, 2, 2)
+        Config::new(dimensions, 4, 1, 2, 2, 2)
     }
 
     pub fn map_size(&self, dim: &str) -> usize {
@@ -33,5 +32,9 @@ impl Config {
         } else {
             panic!();
         }
+    }
+
+    pub fn starting_execs(&self) -> u32 {
+        self.starting_execs*self.player_number
     }
 }

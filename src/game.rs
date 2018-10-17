@@ -103,6 +103,7 @@ fn node_allowed(gd: &GameData, node: &Node) -> bool {
 mod tests {
     #[allow(unused_imports)]
     use super::*;
+    #[allow(unused_imports)]
     use std::collections::HashMap;
     
     #[test]
@@ -119,7 +120,14 @@ mod tests {
     
     #[test]
     fn test_node_allowed() {
-        let config = Config::new(vec![11,11], 4, 1, 2, 2);
+        let config = Config {
+            map_size: vec![11,11],
+            player_number: 4,
+            starting_nodes: 1,
+            starting_distance: 2,
+            starting_boarder_distance: 2,
+            starting_execs: 1
+        };
         let mut gd = GameData::new(config);
         // Owned
         let mut owned = Node::new(&vec![2,2]);
@@ -160,7 +168,7 @@ mod tests {
         let nodes_per_col = nodes_per_length(map_hei as f32, space_to_boarder as f32, space_between as f32) as usize;
         let nr_nodes = nodes_per_row * nodes_per_col;
 
-        let config = Config::new(vec![map_len,map_hei], 4, 1, space_between, space_to_boarder);
+        let config = Config::new(vec![map_len,map_hei], 4, 1, space_between, space_to_boarder, 1);
 
         let mut game_data = GameData::new(config);
         let player_id = game_data.players[0].id.to_owned();
