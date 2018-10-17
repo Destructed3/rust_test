@@ -123,6 +123,7 @@ mod tests {
         let config = Config {
             map_size: vec![11,11],
             player_number: 4,
+            starting_money: 0,
             starting_nodes: 1,
             starting_distance: 2,
             starting_boarder_distance: 2,
@@ -144,7 +145,7 @@ mod tests {
             assert!(node_allowed(&gd, &node));
         }
         // Not colliding with other node
-        let evil_player = Player::new(String::from("Fuck"), String::from("You"));
+        let evil_player = Player::new(String::from("Fuck"), String::from("You"), 0);
         let pid = evil_player.id.clone();
         let evil_node = Node::new(&vec![5,5]);
         gd.players.push(evil_player);
@@ -168,7 +169,7 @@ mod tests {
         let nodes_per_col = nodes_per_length(map_hei as f32, space_to_boarder as f32, space_between as f32) as usize;
         let nr_nodes = nodes_per_row * nodes_per_col;
 
-        let config = Config::new(vec![map_len,map_hei], 4, 1, space_between, space_to_boarder, 1);
+        let config = Config::new(vec![map_len,map_hei], 4, 0, 1, space_between, space_to_boarder, 1);
 
         let mut game_data = GameData::new(config);
         let player_id = game_data.players[0].id.to_owned();

@@ -14,7 +14,7 @@ impl GameData {
         for player_nr in 0..config.player_number {
             let mut id = String::from("P");
             id.push_str(&player_nr.to_string());
-            let player = Player::new(id, generators::generate_name());
+            let player = Player::new(id, generators::generate_name(), config.starting_money);
             players.push(player);
         }
 
@@ -130,7 +130,7 @@ mod tests {
 
     #[test]
     fn test_get_exec() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 2);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 2);
         let mut gd = GameData::new(config);
 
         let id = &gd.execs[0].id.to_string();
@@ -142,7 +142,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_get_exec_panic() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
         let mut gd = objects::game_data::GameData::new(config);
 
         gd.get_exec("!");
@@ -150,7 +150,7 @@ mod tests {
 
     #[test]
     fn test_get_player() {
-        let config = Config::new(vec![1,1], 4, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 4, 0, 1, 1, 1, 1);
         let mut gd = GameData::new(config);
 
         let id = &gd.players[0].id.to_string();
@@ -162,7 +162,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_get_player_panic() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
         let mut gd = objects::game_data::GameData::new(config);
 
         gd.get_player("!");
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_unemployed_execs() {
-        let config = Config::new(vec![1,1], 4, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 4, 0, 1, 1, 1, 1);
         let mut gd = GameData::new(config);
         let execs_nr = gd.execs.iter().len();
 
@@ -183,7 +183,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_unemployed_execs_panic() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
         let mut gd = GameData::new(config);
         let execs = gd.execs.iter_mut();
         for exec in execs {
@@ -195,7 +195,7 @@ mod tests {
 
     #[test]
     fn test_get_node() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
         let mut gd = GameData::new(config);
         let id = gd.map[0][0].id.to_owned();
         let node = gd.get_node(&id);
@@ -205,14 +205,14 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_get_node_panic() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
         let mut gd = GameData::new(config);
         gd.get_node("ERROR");
     }
 
     #[test]
     fn test_add_exec_to_player() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
         let mut gd = GameData::new(config);
         let p_id = gd.players[0].id.clone();
         let e_id = gd.execs[0].id.clone();
@@ -225,7 +225,7 @@ mod tests {
 
     #[test]
     fn test_remove_exec_from_player() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
         let mut gd = GameData::new(config);
         let p_id = gd.players[0].id.clone();
         let e_id = gd.execs[0].id.clone();
@@ -241,7 +241,7 @@ mod tests {
 
     #[test]
     fn test_add_node_to_player() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
         let mut gd = GameData::new(config);
         let p_id = gd.players[0].id.clone();
         let n_id = gd.map[0][0].id.clone();
@@ -257,7 +257,7 @@ mod tests {
 
     #[test]
     fn test_remove_node_from_player() {
-        let config = Config::new(vec![1,1], 1, 1, 1, 1, 1);
+        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
         let mut gd = GameData::new(config);
         let p_id = gd.players[0].id.clone();
         let n_id = gd.map[0][0].id.clone();

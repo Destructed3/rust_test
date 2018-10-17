@@ -46,7 +46,7 @@ mod generators {
         #[test]
         fn namegeneration() {
             use crate::objects::player;
-            let obj = player::Player::new(String::from("1"), generate_name());
+            let obj = player::Player::new(String::from("1"), generate_name(), 0);
             assert!(obj.name.len() > 1);
         }
     }
