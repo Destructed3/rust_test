@@ -3,10 +3,11 @@
 extern crate cybercity;
 
 use cybercity::*;
+use self::objects::{config, game_data};
 
 fn main() {
-    let dimensions = vec![16,16];
-    let game_data = objects::game_data::GameData::new(&dimensions);
+    let config = config::Config::read_config();
+    let game_data = game_data::GameData::new(config);
 
     game::run(game_data);
 }

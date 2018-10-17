@@ -5,6 +5,7 @@ use crate::objects::exec::*;
 use crate::objects::node::*;
 use crate::objects::game_data::*;
 use crate::objects::action::*;
+use crate::objects::config::*;
 
 pub mod objects;
 pub mod game;

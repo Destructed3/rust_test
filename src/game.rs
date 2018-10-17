@@ -103,11 +103,11 @@ fn node_allowed(gd: &GameData, node: &Node) -> bool {
 mod tests {
     #[allow(unused_imports)]
     use super::*;
+    use std::collections::HashMap;
     
     #[test]
     fn test_setup_players() {
-        let dimensions = vec![16,16];
-        let mut game_data = objects::game_data::GameData::new(&dimensions);
+        let mut game_data = GameData::new(Config::read_config());
         
         game_data = setup_players(game_data);
 
@@ -119,8 +119,8 @@ mod tests {
     
     #[test]
     fn test_node_allowed() {
-        let (map_len, map_hei) = (11,11);
-        let mut gd = objects::game_data::GameData::new(&vec![map_len,map_hei]);
+        let config = Config::new(vec![11,11], 4, 1, 2, 2);
+        let mut gd = GameData::new(config);
         // Owned
         let mut owned = Node::new(&vec![2,2]);
         owned.owner = String::from("Jackshit");
@@ -153,7 +153,6 @@ mod tests {
     
     #[test]
     fn test_find_start_node() {
-        use std::collections::HashMap;
         // Config
         let nodes_per_length = |length: f32, space_to_boarder: f32, space_between: f32| { return ((length - 2_f32*space_to_boarder) / (space_between+1_f32)).ceil() };
         let (map_len, map_hei, space_to_boarder, space_between) = (8, 8, 2, 2); // To be moved to config-struct
@@ -161,7 +160,9 @@ mod tests {
         let nodes_per_col = nodes_per_length(map_hei as f32, space_to_boarder as f32, space_between as f32) as usize;
         let nr_nodes = nodes_per_row * nodes_per_col;
 
-        let mut game_data = objects::game_data::GameData::new(&vec![map_len,map_hei]);
+        let config = Config::new(vec![map_len,map_hei], 4, 1, space_between, space_to_boarder);
+
+        let mut game_data = GameData::new(config);
         let player_id = game_data.players[0].id.to_owned();
         let mut node_coord: Vec<HashMap<&str, u32>> = Vec::with_capacity(nr_nodes);
         // Test starts here
@@ -204,7 +205,7 @@ mod tests {
 
     #[test]
     fn test_find_start_execs() {
-        let mut game_data = objects::game_data::GameData::new(&vec![16,16]);
+        let mut game_data = objects::game_data::GameData::new(Config::read_config());
         let exec_ids = find_start_execs(&game_data);
         let execs_ids_iter = exec_ids.iter();
         for exec_id in execs_ids_iter {
