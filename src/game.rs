@@ -89,7 +89,8 @@ fn node_allowed(gd: &GameData, node: &Node) -> bool {
     }
     // Node away from other owned nodes
     let check_blocker = |old_node: &Node| {
-        old_node.owner != "" && (node.x < old_node.x+2) && (node.y < old_node.y+2)
+        let inside_radius = |val, old_val| val >= old_val-2 && val <= old_val+2;
+        old_node.owner != "" && inside_radius(node.x, old_node.x) && inside_radius(node.y, old_node.y)
     };
     for row in gd.map.iter() {
         if row.iter().filter( |n| check_blocker(n) ).count() > 0 {
@@ -142,14 +143,14 @@ mod tests {
         gd.add_node_to_player(&evil_node.id, &pid);
         let inside_player_area = vec![Node::new(&vec![3,3]), Node::new(&vec![3,7]), Node::new(&vec![7,3]), Node::new(&vec![7,7])];
         for node in inside_player_area.iter() {
-            assert!( !node_allowed(&gd, &node) );
+            assert!( !node_allowed(&gd, &node), "failed for {}/{}, Map.len(): {}", &node.x, &node.y, gd.map.len());
         }
         let outside_player_area = vec![Node::new(&vec![2,2]), Node::new(&vec![2,8]), Node::new(&vec![8,2]), Node::new(&vec![8,8])];
         for node in outside_player_area.iter() {
             assert!( node_allowed(&gd, &node), "failed for {}/{}", &node.x, &node.y );
         }
     }
-
+    
     #[test]
     fn test_find_start_node() {
         use std::collections::HashMap;
