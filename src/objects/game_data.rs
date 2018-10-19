@@ -5,6 +5,7 @@ pub struct GameData {
     pub players: Vec<Player>,
     pub execs: Vec<Exec>,
     pub actions: Vec<Action>,
+    pub config: Config,
 }
 
 impl GameData {
@@ -41,7 +42,7 @@ impl GameData {
 
         let actions = Vec::new();
 
-        GameData { map, players, execs, actions }
+        GameData { map, players, execs, actions, config }
     }
 
     pub fn get_exec(&mut self, id: &str) -> &mut Exec {

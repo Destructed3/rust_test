@@ -1,29 +1,7 @@
-use super::*;
-
-/// Main function to start off the game
-pub fn run(game_data: GameData) {
-    let gd = setup_players(game_data);
-    let map = gd.map.iter();
-    for row in map {
-        let nodes = row.iter();
-        for node in nodes {
-            println!("node at {}/{}, ID: {}, Owner: {}", &node.x, &node.y, &node.id, &node.owner);
-        }
-    }
-
-    let players = gd.players.iter();
-    for player in players {
-        println!("Player: {}; ID: {}, Nodes: {:?}, Execs: {:?}", &player.name, &player.id, &player.nodes, &player.execs);
-    }
-
-    let execs = gd.execs.iter();
-    for exec in execs {
-        println!("Exec: {}; ID: {}, Employer: {}", &exec.name, &exec.id, &exec.employer);
-    }
-}
+use crate::objects::{game_data::GameData, node::Node};
 
 /// distributes starting ressources to players
-fn setup_players(mut gd: GameData) -> GameData {
+pub fn setup_players(mut gd: GameData) -> GameData {
     for i in 0..gd.players.len() {
         let player_id = gd.players[i].id.clone(); 
 
@@ -38,7 +16,7 @@ fn setup_players(mut gd: GameData) -> GameData {
     gd
 }
 
-fn find_start_node(gd: &GameData) -> Result<String, String> {
+pub fn find_start_node(gd: &GameData) -> Result<String, String> {
     let mut node_id: &str = "";
     let rows = gd.map.iter();
     for row in rows {
@@ -59,10 +37,10 @@ fn find_start_node(gd: &GameData) -> Result<String, String> {
     return Ok(node_id.to_owned())    
 }
 
-fn find_start_execs(gd: &GameData) -> Vec<String> {
+pub fn find_start_execs(gd: &GameData) -> Vec<String> {
     // Make this loop variable? -> config would be part of GameData
-    let mut exec_ids: Vec<String> = Vec::with_capacity(2);
-    while exec_ids.len() < exec_ids.capacity() {
+    let mut exec_ids: Vec<String> = Vec::with_capacity(gd.config.starting_execs as usize);
+    while exec_ids.len() < gd.config.starting_execs as usize {
         let execs = gd.execs.iter();
         for exec in execs {
             if exec.employer == "" && !exec_ids.contains(&exec.id) {
@@ -100,24 +78,15 @@ fn node_allowed(gd: &GameData, node: &Node) -> bool {
     true
 }
 
+#[cfg(test)]
 mod tests {
     #[allow(unused_imports)]
     use super::*;
     #[allow(unused_imports)]
     use std::collections::HashMap;
-    
-    #[test]
-    fn test_setup_players() {
-        let mut game_data = GameData::new(Config::read_config());
-        
-        game_data = setup_players(game_data);
 
-        let _players: Vec<_> = game_data.players.iter().map( |player| {
-            assert_eq!(player.execs.len(), 2);
-            assert_eq!(player.nodes.len(), 1);
-        }).collect();
-    }
-    
+    use crate::objects::{config::Config, player::Player};
+
     #[test]
     fn test_node_allowed() {
         let config = Config {
@@ -159,7 +128,7 @@ mod tests {
             assert!( node_allowed(&gd, &node), "failed for {}/{}", &node.x, &node.y );
         }
     }
-    
+
     #[test]
     fn test_find_start_node() {
         // Config
@@ -214,7 +183,7 @@ mod tests {
 
     #[test]
     fn test_find_start_execs() {
-        let mut game_data = objects::game_data::GameData::new(Config::read_config());
+        let mut game_data = crate::objects::game_data::GameData::new(Config::read_config());
         let exec_ids = find_start_execs(&game_data);
         let execs_ids_iter = exec_ids.iter();
         for exec_id in execs_ids_iter {
@@ -222,5 +191,4 @@ mod tests {
             assert_eq!(game_data.get_exec(exec_id).employer, "");
         }
     }
-
 }
