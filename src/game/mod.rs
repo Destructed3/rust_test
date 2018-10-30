@@ -1,6 +1,8 @@
 use super::*;
 
 mod startup;
+mod endturn;
+mod actions;
 
 /// Main function to start off the game
 pub fn run(game_data: GameData) {

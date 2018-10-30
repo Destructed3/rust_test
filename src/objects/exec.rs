@@ -1,9 +1,11 @@
-#[derive(Debug)]
+use super::*;
+
+//#[derive(Debug)]
 pub struct Exec {
     pub id: String,
     pub name: String,
     pub employer: String,
-    pub action_queue: Vec<String>,
+    pub action_queue: Vec<action::Action>,
 }
 impl Exec {
     pub fn new(id: String, name: String) -> Exec {
@@ -17,11 +19,14 @@ impl Exec {
         self.employer = employer.to_owned();
     }
 
-    pub fn add_action(&mut self, action_id: &String) {
-        self.action_queue.push(action_id.to_string());
+    pub fn add_action(&mut self, action: action::Action) {
+        self.action_queue.push(action);
     }
-    pub fn remove_action(&mut self, action_id: &String) {
-        self.action_queue.remove_item(action_id);
+    pub fn remove_action(&mut self, action_id: &str) {
+        let action = self.action_queue.iter().find(|a| a.id == action_id );
+        match action {
+
+        }
     }
 }
 

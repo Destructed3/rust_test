@@ -47,8 +47,8 @@ impl Player {
     }
 }
 
+#[cfg(test)]
 mod tests {
-    #[allow(unused_imports)]
     use super::*;
 
     #[test]
@@ -108,7 +108,7 @@ mod tests {
         let hm: HashMap<String, ActionData> = HashMap::new();
         let exec_id = "ex";
         let id = "1";
-        let action = Action::new(id, &obj.id, exec_id, ActionType::Buy, hm);
+        let action = Action::new(id, &obj.id, exec_id, hm);
         obj.add_action(action);
         assert_eq!(obj.actions[0].id, id.to_string());
     }
@@ -121,7 +121,7 @@ mod tests {
         let hm: HashMap<String, ActionData> = HashMap::new();
         let exec_id = "ex";
         let id = "1";
-        let action = Action::new(id, &obj.id, exec_id, ActionType::Buy, hm);
+        let action = Action::new(id, &obj.id, exec_id, hm);
         obj.add_action(action);
         obj.remove_action(id);
         assert_eq!(obj.actions.len(), len);
