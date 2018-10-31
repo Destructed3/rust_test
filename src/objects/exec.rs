@@ -1,61 +1,65 @@
-use super::*;
+use super::action::Action;
 
-//#[derive(Debug)]
+pub trait ActionQueue {
+    fn get_action(&self, aid: &str) -> &Action;
+    fn remove_action(&mut self, aid: &str) -> bool;
+}
 pub struct Exec {
     pub id: String,
     pub name: String,
     pub employer: String,
-    pub action_queue: Vec<action::Action>,
+    pub action_queue: Vec<Action>,
 }
 impl Exec {
-    pub fn new(id: String, name: String) -> Exec {
+    pub fn new(_id: &str, _name: &str) -> Exec {
+        let id = _id.to_string();
+        let name = _name.to_string();
         let employer = String::from("");
-        let action_queue = Vec::new();
-
+        let action_queue: Vec<Action> = Vec::new();
         Exec { id, name, employer, action_queue }
     }
-
-    pub fn change_employer(&mut self, employer: &String) {
-        self.employer = employer.to_owned();
+}
+impl ActionQueue for Exec {
+    fn get_action(&self, aid: &str) -> &Action {
+        self.action_queue.iter().find( |a| a.id == aid ).unwrap()
     }
 
-    pub fn add_action(&mut self, action: action::Action) {
-        self.action_queue.push(action);
-    }
-    pub fn remove_action(&mut self, action_id: &str) {
-        let action = self.action_queue.iter().find(|a| a.id == action_id );
-        match action {
-
+    fn remove_action(&mut self, aid: &str) -> bool {
+        let i_opt = self.action_queue.iter().position( |a| a.id == aid );
+        match i_opt {
+            Some(i) => {
+                self.action_queue.remove(i);
+                true
+            },
+            None => false
         }
     }
+
 }
 
+#[cfg(test)]
 mod tests {
-    #[allow(unused_imports)]
     use super::*;
 
     #[test]
-    fn change_employer() {
-        let employer = String::from("P12");
-        let mut exec = Exec::new(String::from("1"), String::from("Egon"));
-        exec.change_employer(&employer);
-        assert_eq!(exec.employer, employer);
+    fn test_get_action() {
+        let mut exec = Exec::new("E", "E");
+        let action = Action::new("P", "E");
+        let id = action.id.to_string();
+        exec.action_queue.push(action);
+        let result = exec.get_action(&id);
+        assert!(result.id == id && result.exec_id == "E");
     }
 
     #[test]
-    fn add_action() {
-        let action = String::from("A12");
-        let mut exec = Exec::new(String::from("1"), String::from("Egon"));
-        exec.add_action(&action);
-        assert_eq!(exec.action_queue[0], action);
-    }
-
-    #[test]
-    fn remove_action() {
-        let action = String::from("A12");
-        let mut exec = Exec::new(String::from("1"), String::from("Egon"));
-        exec.add_action(&action);
-        exec.remove_action(&action);
+    fn test_remove_action() {
+        let mut exec = Exec::new("E", "E");
+        let action = Action::new("P", "E");
+        let id = action.id.to_string();
+        exec.action_queue.push(action);
+        assert_eq!(exec.action_queue.len(), 1);
+        assert!( exec.remove_action(&id) );
         assert_eq!(exec.action_queue.len(), 0);
+        assert!( !exec.remove_action(&id) );
     }
 }

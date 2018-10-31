@@ -2,7 +2,7 @@ use super::*;
 
 mod startup;
 mod endturn;
-mod actions;
+// mod actions;
 
 /// Main function to start off the game
 pub fn run(game_data: GameData) {
@@ -14,20 +14,10 @@ pub fn run(game_data: GameData) {
             println!("node at {}/{}, ID: {}, Owner: {}", &node.x, &node.y, &node.id, &node.owner);
         }
     }
-
-    let players = gd.players.iter();
-    for player in players {
-        println!("Player: {}; ID: {}, Nodes: {:?}, Execs: {:?}", &player.name, &player.id, &player.nodes, &player.execs);
-    }
-
-    let execs = gd.execs.iter();
-    for exec in execs {
-        println!("Exec: {}; ID: {}, Employer: {}", &exec.name, &exec.id, &exec.employer);
-    }
 }
 
+#[cfg(test)]
 mod tests {
-    #[allow(unused_imports)]
     use super::*;
 
     #[test]

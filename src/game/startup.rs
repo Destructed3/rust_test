@@ -16,41 +16,38 @@ pub fn setup_players(mut gd: GameData) -> GameData {
     gd
 }
 
-pub fn find_start_node(gd: &GameData) -> Result<String, String> {
+pub fn find_start_node<'a>(gd: &'a mut GameData) -> Result<&'a mut Node, String> {
     let mut node_id: &str = "";
     let rows = gd.map.iter();
     for row in rows {
-        let nodes = row.iter();
+        let nodes = row.iter_mut();
         for node in nodes {
-            if node_allowed(&gd, &node) {
-                node_id = &node.id;
-                break;
+            if node_allowed(&gd, node) {
+                return Ok(node);
             }
         }
         if node_id.len() > 0 {
             break;
         }
     }
-    if node_id == "" {
-        return Err(String::from("Fuck"));
-    }
-    return Ok(node_id.to_owned())    
+    return Err(String::from("Fuck"));
 }
 
-pub fn find_start_execs(gd: &GameData) -> Vec<String> {
+pub fn find_start_execs(gd: &GameData) -> Vec<super::objects::exec::Exec> {
     // Make this loop variable? -> config would be part of GameData
-    let mut exec_ids: Vec<String> = Vec::with_capacity(gd.config.starting_execs as usize);
-    while exec_ids.len() < gd.config.starting_execs as usize {
-        let execs = gd.execs.iter();
-        for exec in execs {
-            if exec.employer == "" && !exec_ids.contains(&exec.id) {
-                exec_ids.push(exec.id.to_owned());
+    let mut execs: Vec<super::objects::exec::Exec> = Vec::with_capacity(gd.config.starting_execs as usize);
+    while execs.len() < gd.config.starting_execs as usize {
+        let _execs = gd.execs.iter();
+        for exec in _execs {
+            let fuck = execs.iter().find( |e| e.id == exec.id);
+            if exec.employer == "" && fuck.is_none() {
+                execs.push(*exec);
                 break;
             }
         }
     }
 
-    exec_ids
+    execs
 }
 
 fn node_allowed(gd: &GameData, node: &Node) -> bool {
@@ -118,7 +115,7 @@ mod tests {
         let pid = evil_player.id.clone();
         let evil_node = Node::new(&vec![5,5]);
         gd.players.push(evil_player);
-        gd.add_node_to_player(&evil_node.id, &pid);
+        gd.add_node_to_player(&mut evil_node, &pid);
         let inside_player_area = vec![Node::new(&vec![3,3]), Node::new(&vec![3,7]), Node::new(&vec![7,3]), Node::new(&vec![7,7])];
         for node in inside_player_area.iter() {
             assert!( !node_allowed(&gd, &node), "failed for {}/{}, Map.len(): {}", &node.x, &node.y, gd.map.len());
@@ -145,8 +142,7 @@ mod tests {
         let mut node_coord: Vec<HashMap<&str, u32>> = Vec::with_capacity(nr_nodes);
         // Test starts here
         while node_coord.len() < node_coord.capacity() {
-            let node_id = find_start_node(&game_data).expect("{}");
-            let node = game_data.get_node(&node_id);
+            let node = find_start_node(&mut game_data).expect("{}");
             // Ensure real node without owner
             assert_eq!(node.owner, "", "Node nr {}", node_coord.len()+1);
             let hm: HashMap<&str, u32> = [
@@ -154,7 +150,7 @@ mod tests {
                 ("y", node.y)
                 ].iter().cloned().collect();
             node_coord.push(hm);
-            game_data.add_node_to_player(&node_id, &player_id);
+            game_data.add_node_to_player(&mut node, &player_id);
         }
         for node in node_coord.iter() {
             let x = node.get("x").unwrap();

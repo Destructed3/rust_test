@@ -1,21 +1,25 @@
 use crate::*;
 
-pub struct GameData {
+pub struct GameData<'a> {
     pub map: Vec<Vec<Node>>,
-    pub players: Vec<Player>,
+    pub players: Vec<Player<'a>>,
     pub execs: Vec<Exec>,
     pub actions: Vec<Action>,
     pub config: Config,
 }
 
-impl GameData {
-    pub fn new(config: Config) -> GameData {
+impl<'a> GameData<'a> {
+    pub fn new(config: Config) -> GameData<'a> {
         // Create Players
         let mut players = Vec::new();
         for player_nr in 0..config.player_number {
             let mut id = String::from("P");
             id.push_str(&player_nr.to_string());
-            let player = Player::new(id, generators::generate_name(), config.starting_money);
+            let player = Player::new(
+                id, 
+                generators::generate_name(), 
+                config.starting_money
+            );
             players.push(player);
         }
 
@@ -24,7 +28,7 @@ impl GameData {
         for exec_nr in 0..config.starting_execs() {
             let mut id = String::from("E");
             id.push_str(&exec_nr.to_string());
-            let exec = Exec::new(id, generators::generate_name());
+            let exec = Exec::new(&id, &generators::generate_name());
             execs.push(exec);
         }
 
@@ -56,7 +60,7 @@ impl GameData {
         }
     }
 
-    pub fn get_player(&mut self, id: &str) -> &mut Player {
+    pub fn get_player(&mut self, id: &str) -> &mut Player<'a> {
         let players = self.players.iter_mut().find(|p| p.id == id);
 
         match players {
@@ -102,26 +106,14 @@ impl GameData {
         }
     }
 
-    pub fn add_exec_to_player(&mut self, exec_id: &str, player_id: &str) {
-        self.get_player(player_id).execs.push(exec_id.to_string());
-        self.get_exec(exec_id).employer = player_id.to_string();
-    }
-    pub fn remove_exec_from_player(&mut self, exec_id: &str, player_id: &str) {
-        let p_execs = &mut self.get_player(player_id).execs;
-        let index = p_execs.iter().position(|id| id == exec_id).unwrap();
-        p_execs.remove(index);
-        self.get_exec(exec_id).employer = String::from("");
+    pub fn add_exec_to_player(&mut self, mut exec: Exec, player_id: &str) {
+        exec.employer = player_id.to_string();
+        self.get_player(player_id).execs.push(exec);
     }
 
-    pub fn add_node_to_player(&mut self, node_id: &str, player_id: &str) {
-        self.get_player(player_id).nodes.push(node_id.to_string());
-        self.get_node(node_id).owner = player_id.to_string();
-    }
-    pub fn remove_node_from_player(&mut self, node_id: &str, player_id: &str) {
-        let p_nodes = &mut self.get_player(player_id).nodes;
-        let index = p_nodes.iter().position(|id| id == node_id).unwrap();
-        p_nodes.remove(index);
-        self.get_node(node_id).owner = String::from("");
+    pub fn add_node_to_player(&mut self, node: &'a mut Node, player_id: &str) {
+        node.owner = player_id.to_string();
+        self.get_player(player_id).nodes.push(node);
     }
 }
 
@@ -218,26 +210,10 @@ mod tests {
         let p_id = gd.players[0].id.clone();
         let e_id = gd.execs[0].id.clone();
 
-        gd.add_exec_to_player(&e_id, &p_id);
+        gd.add_exec_to_player(gd.execs[0], &p_id);
 
-        assert_eq!(gd.players[0].execs[0], e_id);
+        assert_eq!(gd.players[0].execs[0].id, e_id);
         assert_eq!(gd.execs[0].employer, p_id);
-    }
-
-    #[test]
-    fn test_remove_exec_from_player() {
-        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
-        let mut gd = GameData::new(config);
-        let p_id = gd.players[0].id.clone();
-        let e_id = gd.execs[0].id.clone();
-
-        let nr_e = gd.players[0].execs.len();
-
-        gd.add_exec_to_player(&e_id, &p_id);
-        gd.remove_exec_from_player(&e_id, &p_id);
-
-        assert_eq!(gd.players[0].execs.len(), nr_e);
-        assert_eq!(gd.execs[0].employer, "");
     }
 
     #[test]
@@ -249,26 +225,10 @@ mod tests {
 
         let nr_n = gd.players[0].nodes.len();
 
-        gd.add_node_to_player(&n_id, &p_id);
+        gd.add_node_to_player(&mut gd.map[0][0], &p_id);
 
         assert!(gd.players[0].nodes.len() > nr_n);
-        assert_eq!(gd.players[0].nodes[0], n_id);
+        assert_eq!(gd.players[0].nodes[0].id, n_id);
         assert_eq!(gd.map[0][0].owner, p_id);
-    }
-
-    #[test]
-    fn test_remove_node_from_player() {
-        let config = Config::new(vec![1,1], 1, 0, 1, 1, 1, 1);
-        let mut gd = GameData::new(config);
-        let p_id = gd.players[0].id.clone();
-        let n_id = gd.map[0][0].id.clone();
-
-        let nr_n = gd.players[0].nodes.len();
-
-        gd.add_node_to_player(&n_id, &p_id);
-        gd.remove_node_from_player(&n_id, &p_id);
-
-        assert_eq!(gd.players[0].nodes.len(), nr_n);
-        assert_eq!(gd.map[0][0].owner, "".to_string());
     }
 }
